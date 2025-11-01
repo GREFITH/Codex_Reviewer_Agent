@@ -1,0 +1,49 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	parse_input(parse_input)
+	validate_repo(validate_repo)
+	ask_repo(ask_repo)
+	create_jira(create_jira)
+	notify_slack(notify_slack)
+	clone_repo(clone_repo)
+	mark_review_in_progress(mark_review_in_progress)
+	supervisor_decide(supervisor_decide)
+	deep_review(deep_review)
+	generate_report(generate_report)
+	update_jira(update_jira)
+	update_slack(update_slack)
+	orchestrator_router(orchestrator_router)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> parse_input;
+	ask_repo --> parse_input;
+	clone_repo --> orchestrator_router;
+	create_jira --> orchestrator_router;
+	deep_review --> orchestrator_router;
+	generate_report --> orchestrator_router;
+	mark_review_in_progress --> orchestrator_router;
+	notify_slack --> orchestrator_router;
+	orchestrator_router -.-> __end__;
+	orchestrator_router -.-> ask_repo;
+	orchestrator_router -.-> clone_repo;
+	orchestrator_router -.-> create_jira;
+	orchestrator_router -.-> deep_review;
+	orchestrator_router -.-> generate_report;
+	orchestrator_router -.-> mark_review_in_progress;
+	orchestrator_router -.-> notify_slack;
+	orchestrator_router -.-> supervisor_decide;
+	orchestrator_router -.-> update_jira;
+	orchestrator_router -.-> update_slack;
+	orchestrator_router -.-> validate_repo;
+	parse_input --> validate_repo;
+	supervisor_decide --> orchestrator_router;
+	update_jira --> orchestrator_router;
+	validate_repo --> orchestrator_router;
+	update_slack --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
