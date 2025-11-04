@@ -1,9 +1,3 @@
-"""
-TRUE AGENTIC Agent-to-Agent (A2A) System with Context Awareness
-100% LLM-Driven Decision Making - Zero Hardcoded Logic
-FIXED: Context properly shared, no information loss, graph visualization added
-"""
-
 from langchain_openai import AzureChatOpenAI
 from langgraph.graph import StateGraph, START, END, MessagesState
 from langgraph.prebuilt import create_react_agent
@@ -326,7 +320,7 @@ def slack_create_jira_notification(
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"🎫 Jira Issue Update: {issue_key}"
+                    "text": f" Jira Issue Update: {issue_key}"
                 }
             },
             {
@@ -513,7 +507,7 @@ Be explicit and include ALL information. This data will be used by other agents.
     last_message = resp.get("messages", [])[-1]
     response_text = last_message.content
     
-    print("\n🎫 Jira Agent Response:")
+    print("\n Jira Agent Response:")
     print(response_text[:600] if len(response_text) > 600 else response_text)
     
     # Extract comprehensive context
@@ -521,10 +515,10 @@ Be explicit and include ALL information. This data will be used by other agents.
     context_data = state.get("context_data", {})
     
     if jira_info:
-        print(f"\n📝 Extracted Context: {jira_info}")
+        print(f"\n Extracted Context: {jira_info}")
         context_data.update(jira_info)
     else:
-        print("\n⚠️ Warning: Could not extract complete context from Jira response")
+        print("\n Warning: Could not extract complete context from Jira response")
     
     return {
         "messages": [AIMessage(content=response_text)],
@@ -592,7 +586,7 @@ CRITICAL INSTRUCTIONS:
     last_message = resp.get("messages", [])[-1]
     response_text = last_message.content
     
-    print("\n💬 Slack Agent Response:")
+    print("\n Slack Agent Response:")
     print(response_text)
     
     return {"messages": [AIMessage(content=response_text)]}
@@ -607,7 +601,7 @@ def supervisor(state: State) -> State:
     
     # Safety check
     if iteration > 10:
-        print("\n⚠️ Max iterations reached, completing process")
+        print("\n Max iterations reached, completing process")
         return {
             "messages": [AIMessage(content="COMPLETE - All tasks finished")],
             "iteration_count": iteration + 1,
@@ -641,7 +635,7 @@ Respond with a clear instruction for the first agent to execute."""
             HumanMessage(content=f"User Query: {original_query}\n\nWhat should be done first?")
         ])
         
-        print(f"\n👔 Supervisor (Iteration {iteration}):")
+        print(f"\n Supervisor (Iteration {iteration}):")
         print(f"First Task: {resp.content}")
         
         return {
@@ -691,7 +685,7 @@ Review the conversation and decide: What's next?""")
         
         resp = llm.invoke(conversation)
         
-        print(f"\n👔 Supervisor (Iteration {iteration}):")
+        print(f"\n Supervisor (Iteration {iteration}):")
         decision_preview = resp.content[:200] + "..." if len(resp.content) > 200 else resp.content
         print(f"Decision: {decision_preview}")
         
@@ -699,7 +693,7 @@ Review the conversation and decide: What's next?""")
         task_completed = any(keyword in resp.content.upper() for keyword in ["COMPLETE", "ALL TASKS", "EVERYTHING IS", "FULLY SATISFIED"])
         
         if task_completed:
-            print("✅ Supervisor detected: All tasks COMPLETE")
+            print(" Supervisor detected: All tasks COMPLETE")
         
         return {
             "messages": [AIMessage(content=resp.content)],
@@ -714,7 +708,7 @@ def orchestrator(state: State) -> State:
     task_completed = state.get("task_completed", False)
     
     if not messages or task_completed:
-        print("\n🎯 Orchestrator: END (Tasks Complete)")
+        print("\n Orchestrator: END (Tasks Complete)")
         return {"next_node": "end"}
     
     last_message = messages[-1]
@@ -722,7 +716,7 @@ def orchestrator(state: State) -> State:
     
     # Quick completion check
     if any(keyword in content.upper() for keyword in ["COMPLETE", "FINISHED", "ALL DONE"]):
-        print("\n🎯 Orchestrator: END (Completion Detected)")
+        print("\n Orchestrator: END (Completion Detected)")
         return {"next_node": "end"}
     
     # LLM decides routing
@@ -760,7 +754,7 @@ Examples:
     else:
         next_node = 'end'
     
-    print(f"\n🎯 Orchestrator: Route to {next_node.upper()}")
+    print(f"\n Orchestrator: Route to {next_node.upper()}")
     
     return {"next_node": next_node}
 
@@ -810,10 +804,10 @@ def save_graph_visualization(app, filename="agentic_a2a_graph.png"):
         with open(filename, 'wb') as f:
             f.write(graph_image)
         
-        print(f"\n📊 Graph visualization saved: {filename}")
+        print(f"\n Graph visualization saved: {filename}")
         return True
     except Exception as e:
-        print(f"\n⚠️ Could not save graph visualization: {e}")
+        print(f"\n Could not save graph visualization: {e}")
         print("   Install: pip install pygraphviz (or) pip install grandalf")
         return False
 
@@ -824,15 +818,9 @@ def save_graph_visualization(app, filename="agentic_a2a_graph.png"):
 
 if __name__ == "__main__":
     print("=" * 90)
-    print("🤖 TRUE AGENTIC A2A SYSTEM - 100% LLM-Driven Intelligence")
+    print(" SLACK & JIRA AGENTIC A2A SYSTEM ")
     print("=" * 90)
-    print("\n✨ Features:")
-    print("  🧠 100% LLM-driven decisions - ZERO hardcoded logic")
-    print("  🔗 Automatic context sharing - No information loss")
-    print("  🎯 Intelligent routing - LLM decides everything")
-    print("  📋Full Jira operations")
-    print("  💬 Full Slack operations")
-    print("\n💡 Example Queries:")
+    print("\n Example Queries:")
     print("  • 'Create a task for API testing'")
     print("  • 'Send hello message to Slack'")
     print("  • 'Create a bug for login issue and notify the team'")
@@ -844,10 +832,10 @@ if __name__ == "__main__":
     app = build_graph()
     
     # Get user input
-    user_query = input("\n💭 Enter your query: ").strip()
+    user_query = input("\n Enter your query: ").strip()
     
     if not user_query:
-        print("❌ No query provided. Exiting.")
+        print(" No query provided. Exiting.")
         exit()
     
     # Initialize state
@@ -859,7 +847,7 @@ if __name__ == "__main__":
         "task_completed": False
     }
     
-    print(f"\n🚀 Processing: '{user_query}'")
+    print(f"\n Processing: '{user_query}'")
     print("\n" + "─" * 90)
     
     # Execute workflow
@@ -872,17 +860,18 @@ if __name__ == "__main__":
                     if messages:
                         final_messages.extend(messages)
     except Exception as e:
-        print(f"\n❌ Error during execution: {str(e)}")
+        print(f"\n Error during execution: {str(e)}")
     
     # Display results
     print("\n" + "=" * 90)
-    print("✅ EXECUTION COMPLETE")
+    print(" EXECUTION COMPLETE")
     print("=" * 90)
     
     if final_messages:
-        print("\n📝 Final Results:")
+        print("\n Final Results:")
         for msg in final_messages[-3:]:  # Show last 3 messages
             if isinstance(msg, AIMessage):
                 print(f"\n{msg.content}")
     
+
     print("\n" + "=" * 90)
