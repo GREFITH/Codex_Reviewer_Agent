@@ -1,8 +1,3 @@
-"""
-Multi-Agent System with Tool Calling Pattern
-Clean, simple prompts to avoid content filtering
-"""
-
 from langchain_openai import AzureChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from langchain_core.tools import tool
@@ -255,7 +250,7 @@ def slack_create_jira_notification(
         blocks = [
             {
                 "type": "header",
-                "text": {"type": "plain_text", "text": f"🎫 Jira Issue: {issue_key}"}
+                "text": {"type": "plain_text", "text": f" Jira Issue: {issue_key}"}
             },
             {
                 "type": "section",
@@ -304,7 +299,7 @@ SLACK_TOOLS = [
     slack_create_jira_notification
 ]
 
-# ⭐ AGENTS CREATED LAZILY (only when needed)
+
 _jira_agent = None
 _slack_agent = None
 
@@ -339,10 +334,6 @@ def call_jira_agent(query: str) -> str:
     Returns:
         str with result details
     """
-    # 🔧 PROMPT MODIFICATION POINT #1
-    # Modify query here to change Jira agent behavior
-    # Example: enhanced_query = f"Be concise. {query}"
-    
     agent = get_jira_agent()
     result = agent.invoke({"messages": [HumanMessage(content=query)]})
     return result["messages"][-1].content
@@ -358,9 +349,6 @@ def call_slack_agent(query: str) -> str:
     Returns:
         str with result confirmation
     """
-    # 🔧 PROMPT MODIFICATION POINT #2
-    # Modify query here to change Slack agent behavior
-    
     agent = get_slack_agent()
     result = agent.invoke({"messages": [HumanMessage(content=query)]})
     return result["messages"][-1].content
@@ -386,54 +374,51 @@ def create_supervisor_agent():
 
 if __name__ == "__main__":
     print("\n" + "="*70)
-    print("🤖 MULTI-AGENT SYSTEM - Tool Calling Pattern")
+    print(" MULTI-AGENT SYSTEM - Tool Calling Pattern")
     print("="*70)
     print("""
-✨ Architecture:
-  👔 Supervisor Agent (coordinates everything)
-  ├─ 🎫 Jira Agent (create, search, update issues)
-  └─ 💬 Slack Agent (send messages, notifications)
+ Architecture:
+  Supervisor Agent (coordinates everything)
+  ├─  Jira Agent (create, search, update issues)
+  └─  Slack Agent (send messages, notifications)
 
-✅ Examples:
-  📋 Search: "list all jira issues" or "show all issues"
-  ➕ Create: "create task for API testing"
-  🔄 Update: "update SCRUM-107 to In Progress"
-  💬 Slack: "send hello to slack"
-  🔗 Combined: "create bug and notify team"
+ Examples:
+   Search: "list all jira issues" or "show all issues"
+   Create: "create task for API testing"
+   Update: "update SCRUM-107 to In Progress"
+   Slack: "send hello to slack"
+   Combined: "create bug and notify team"
     """)
     print("="*70)
     
     supervisor = create_supervisor_agent()
     
     while True:
-        user_query = input("\n💭 Your query (or 'exit'): ").strip()
+        user_query = input("\n Your query (or 'exit'): ").strip()
         
         if user_query.lower() in ['exit', 'quit', 'q']:
-            print("👋 Goodbye!")
+            print(" Goodbye!")
             break
         
         if not user_query:
             continue
         
-        print(f"\n🚀 Processing: '{user_query}'")
+        print(f"\n Processing: '{user_query}'")
         print("─" * 70)
         
         try:
-            # 🔧 PROMPT MODIFICATION POINT #3
-            # Modify user_query here to change supervisor behavior globally
-            # Example: enhanced_query = f"Be brief. {user_query}"
-            
             result = supervisor.invoke({"messages": [HumanMessage(content=user_query)]})
             
             final_message = result["messages"][-1]
             
             print("\n" + "="*70)
-            print("✅ RESULT:")
+            print("RESULT:")
             print("="*70)
             print(final_message.content)
             print("\n" + "="*70)
             
         except Exception as e:
-            print(f"\n❌ Error: {str(e)}")
+            print(f"\n Error: {str(e)}")
             import traceback
             traceback.print_exc()
+
