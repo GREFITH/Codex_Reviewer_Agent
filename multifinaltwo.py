@@ -1,22 +1,5 @@
-"""
-MULTI-AGENT SYSTEM - JIRA + SLACK + CODE REVIEW (v5.7 fixed)
-
-Features:
-- Supervisor Agent orchestrating:
-    - Jira Agent       (create/search/transition issues)
-    - Slack Agent      (simple notifications)
-    - Code Review Agent (clone repo + deep LLM analysis + JSON report)
-- YAML-based prompts: system_prompts.yaml (or PROMPTS_CONFIG_PATH)
-- Deep analysis:
-    - Clone repo
-    - Analyze up to 20 Python files with LLM
-    - Build a detailed JSON report
-    - Attach report to Jira + upload to Slack
-    - Transition Jira: To Do → In Progress → In Review → Done
-"""
-
 from langchain_openai import AzureChatOpenAI
-from langgraph.prebuilt import create_react_agent   # warning but still works
+from langgraph.prebuilt import create_react_agent   
 from langchain_core.tools import tool
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -77,19 +60,19 @@ try:
         server=JIRA_BASE_URL,
         basic_auth=(JIRA_EMAIL, JIRA_API_TOKEN),
     )
-    print("[✅] Jira client initialized")
+    print("Jira client initialized")
 except Exception as e:
-    print(f"[❌] Jira init failed: {e}")
+    print(f"Jira init failed: {e}")
     jira_client = None
 
 try:
     slack_client = WebClient(token=SLACK_BOT_TOKEN, timeout=15)
-    print("[✅] Slack client initialized")
+    print("Slack client initialized")
 except Exception as e:
-    print(f"[❌] Slack init failed: {e}")
+    print(f"Slack init failed: {e}")
     slack_client = None
 
-print(f"[✅] Temp folder: {TEMP_REPO_BASE}")
+print(f"Temp folder: {TEMP_REPO_BASE}")
 
 # ---------------------------------------------------------------------
 # YAML PROMPTS
@@ -105,9 +88,9 @@ def load_prompts() -> None:
     try:
         with open(PROMPTS_PATH, "r", encoding="utf-8") as f:
             PROMPTS = yaml.safe_load(f) or {}
-        print(f"[✅] YAML prompts loaded from {PROMPTS_PATH}")
+        print(f"YAML prompts loaded from {PROMPTS_PATH}")
     except Exception as e:
-        print(f"[⚠️] YAML load failed: {e}")
+        print(f"YAML load failed: {e}")
         PROMPTS = {}
 
 
@@ -138,7 +121,7 @@ def get_system_prompt(agent_name: str) -> str:
 load_prompts()
 
 # ---------------------------------------------------------------------
-# LLM FACTORY
+# LLM loading
 # ---------------------------------------------------------------------
 
 def get_llm() -> AzureChatOpenAI:
@@ -235,13 +218,13 @@ def transition_status(issue_key: str, status: str) -> Dict[str, Any]:
 def format_rich_comment(title: str, data: Any) -> str:
     """Create rich formatted comment for Jira/Slack."""
     comment = f"\n{'='*60}\n"
-    comment += f"🔔 {title}\n"
+    comment += f"{title}\n"
     comment += f"{'='*60}\n\n"
 
     if isinstance(data, dict):
         for key, value in data.items():
             if isinstance(value, (dict, list)):
-                comment += f"📊 *{key}:*\n{json.dumps(value, indent=2)[:1500]}...\n\n"
+                comment += f"*{key}:*\n{json.dumps(value, indent=2)[:1500]}...\n\n"
             else:
                 comment += f"• *{key}:* {value}\n"
     else:
@@ -273,7 +256,7 @@ def notify_step(title: str, json_data: Dict[str, Any]) -> None:
                 workflow.slack_thread_ts = resp.get("ts")
             print(f"[SLACK] {title}")
     except Exception as e:
-        print(f"[⚠️] Slack notify failed: {str(e)[:200]}")
+        print(f"Slack notify failed: {str(e)[:200]}")
 
     # Jira
     try:
@@ -281,7 +264,7 @@ def notify_step(title: str, json_data: Dict[str, Any]) -> None:
             jira_client.add_comment(workflow.issue_key, rich_comment[:30000])
             print(f"[JIRA] {title}")
     except Exception as e:
-        print(f"[⚠️] Jira notify failed: {str(e)[:200]}")
+        print(f"Jira notify failed: {str(e)[:200]}")
 
 # ---------------------------------------------------------------------
 # REPORT HELPERS
@@ -364,10 +347,10 @@ def upload_report_to_slack(report_data: dict, repo_name: str) -> Optional[str]:
         return filename
     except SlackApiError as e:
         err = e.response.get("error", "unknown_error")
-        print(f"[❌] Slack v2 upload error: {err}")
+        print(f"Slack v2 upload error: {err}")
         return None
     except Exception as e:
-        print(f"[❌] Slack report upload failed: {str(e)[:200]}")
+        print(f"Slack report upload failed: {str(e)[:200]}")
         return None
 
 
@@ -384,7 +367,7 @@ def upload_report_to_jira(report_data: dict, issue_key: str, repo_name: str) -> 
         print(f"[JIRA] Report attached: {filename}")
         return filename
     except Exception as e:
-        print(f"[❌] Jira attachment failed: {str(e)[:200]}")
+        print(f"Jira attachment failed: {str(e)[:200]}")
         return None
 
 # ---------------------------------------------------------------------
@@ -416,7 +399,7 @@ def jira_create_issue(
         transition_status(new_issue.key, "In Progress")
 
         notify_step(
-            f"📋 Jira Issue Created: {new_issue.key}",
+            f"Jira Issue Created: {new_issue.key}",
             {"issue_key": new_issue.key, "summary": summary},
         )
 
@@ -539,7 +522,7 @@ def slack_create_jira_notification(
         blocks = [
             {
                 "type": "header",
-                "text": {"type": "plain_text", "text": f"🎫 Jira Issue: {issue_key}"},
+                "text": {"type": "plain_text", "text": f"Jira Issue: {issue_key}"},
             },
             {
                 "type": "section",
@@ -610,14 +593,13 @@ def code_review_clone_repo(repo_url: str, issue_key: str = "") -> dict:
             workflow.issue_key = issue_key
 
         notify_step(
-            "📥 Repository Clone Started",
+            "Repository Clone Started",
             {"status": "cloning", "repo_url": repo_url},
         )
 
         repo_name = repo_url.split("/")[-1].replace(".git", "")
         repo_folder = os.path.normpath(os.path.join(TEMP_REPO_BASE, repo_name))
 
-        # Cleanup with permissions (Windows safe)
         if os.path.exists(repo_folder):
             try:
                 for root, dirs, files in os.walk(repo_folder):
@@ -628,7 +610,7 @@ def code_review_clone_repo(repo_url: str, issue_key: str = "") -> dict:
                             pass
                 shutil.rmtree(repo_folder, ignore_errors=True)
             except Exception as e:
-                print(f"[⚠️] Cleanup failed: {str(e)[:200]}")
+                print(f"Cleanup failed: {str(e)[:200]}")
 
         os.makedirs(TEMP_REPO_BASE, exist_ok=True)
 
@@ -638,7 +620,7 @@ def code_review_clone_repo(repo_url: str, issue_key: str = "") -> dict:
         if result["return_code"] != 0 or result["timed_out"]:
             error_msg = (result["stderr"] or result["stdout"] or "").strip() or "Git clone failed"
             notify_step(
-                "❌ Clone Failed",
+                "Clone Failed",
                 {
                     "error": error_msg[:500],
                     "return_code": result["return_code"],
@@ -658,7 +640,7 @@ def code_review_clone_repo(repo_url: str, issue_key: str = "") -> dict:
             transition_status(workflow.issue_key, "In Review")
 
         notify_step(
-            "✅ Repository Cloned Successfully",
+            "Repository Cloned Successfully",
             {
                 "status": "cloned",
                 "python_files": py_files,
@@ -677,7 +659,7 @@ def code_review_clone_repo(repo_url: str, issue_key: str = "") -> dict:
     except Exception as e:
         err = str(e)[:500]
         notify_step(
-            "❌ Clone Failed (Exception)", {"error": err, "repo_url": repo_url}
+            "Clone Failed (Exception)", {"error": err, "repo_url": repo_url}
         )
         time.sleep(CODE_REVIEW_WAIT_BETWEEN_TOOLS)
         return {"success": False, "error": err}
@@ -792,11 +774,11 @@ File (first 80 lines):
                     elif severity in ["high", "warning"]:
                         analysis_results["summary"]["warnings"] += 1
 
-                print(f"[✅] Analyzed {i}/{len(py_files)}: {py_file.name}")
+                print(f"Analyzed {i}/{len(py_files)}: {py_file.name}")
                 time.sleep(3)
 
             except Exception as e:
-                print(f"[⚠️] File error: {str(e)[:100]}")
+                print(f"File error: {str(e)[:100]}")
 
         scores = [
             f.get("score", 75)
@@ -815,7 +797,7 @@ File (first 80 lines):
         report_data = create_detailed_json_report(analysis_results, repo_name)
 
         notify_step(
-            "📊 Deep Analysis Complete",
+            "Deep Analysis Complete",
             analysis_results["summary"],
         )
 
@@ -826,7 +808,7 @@ File (first 80 lines):
             transition_status(workflow.issue_key, "Done")
 
         notify_step(
-            "✅ Code Review Completed & Uploaded",
+            "Code Review Completed & Uploaded",
             {
                 "final_score": analysis_results["summary"]["overall_score"],
                 "status": "completed",
@@ -842,7 +824,7 @@ File (first 80 lines):
         }
 
     except Exception as e:
-        notify_step("❌ Analysis Failed", {"error": str(e)[:200]})
+        notify_step("Analysis Failed", {"error": str(e)[:200]})
         time.sleep(CODE_REVIEW_WAIT_BETWEEN_TOOLS)
         return {"success": False, "error": str(e)[:200]}
 
@@ -865,7 +847,6 @@ CODE_REVIEW_TOOLS = [
     code_review_extract_repo_url,
     code_review_clone_repo,
     code_review_run_deep_analysis,
-    # allow code review agent to use Jira & Slack directly
     jira_create_issue,
     jira_search_issues,
     jira_transition_issue,
@@ -985,23 +966,23 @@ def create_supervisor_agent():
 
 if __name__ == "__main__":
     print("\n" + "=" * 70)
-    print("🤖 MULTI-AGENT SYSTEM - Tool Calling Pattern (with Code Review)")
+    print("MULTI-AGENT SYSTEM - Tool Calling Pattern (with Code Review)")
     print("=" * 70)
     print(
         """
-✨ Architecture:
+ Architecture:
   👔 Supervisor Agent (coordinates everything)
-  ├─ 🎫 Jira Agent       (create, search, update issues)
-  ├─ 💬 Slack Agent      (send messages, Jira notifications)
-  └─ 🧪 Code Review Agent (clone repo, deep LLM analysis, JSON report)
+  ├─  Jira Agent       (create, search, update issues)
+  ├─  Slack Agent      (send messages, Jira notifications)
+  └─  Code Review Agent (clone repo, deep LLM analysis, JSON report)
 
-✅ Examples:
-  📋 Jira Search: "list all issues" or "show all issues"
-  ➕ Create Issue: "create task for API testing"
-  🔄 Update Issue: "update SCRUM-107 to In Progress"
-  💬 Slack Only:  "send hi in slack"
-  🔗 Combined:    "create bug and notify team"
-  🧪 Code Review: "create a jira issue and do full code review for repo https://github.com/OWNER/REPO and notify in slack"
+ Examples:
+   Jira Search: "list all issues" or "show all issues"
+   Create Issue: "create task for API testing"
+   Update Issue: "update SCRUM-107 to In Progress"
+   Slack Only:  "send hi in slack"
+   Combined:    "create bug and notify team"
+   Code Review: "create a jira issue and do full code review for repo https://github.com/OWNER/REPO and notify in slack"
 """
     )
     print("=" * 70)
@@ -1011,16 +992,16 @@ if __name__ == "__main__":
 
     while True:
         try:
-            user_query = input("\n💭 Your query (or 'exit'): ").strip()
+            user_query = input("\nYour query (or 'exit'): ").strip()
 
             if user_query.lower() in ["exit", "quit", "q"]:
-                print("👋 Goodbye!")
+                print("Goodbye!")
                 break
 
             if not user_query:
                 continue
 
-            print(f"\n🚀 Processing: '{user_query}'")
+            print(f"\nProcessing: '{user_query}'")
             print("─" * 70)
 
             messages = []
@@ -1030,23 +1011,24 @@ if __name__ == "__main__":
 
             result = supervisor.invoke({"messages": messages})
 
-            # 🔹 Show the actual agent response (fix for "list all issues")
+            
             final_message = result["messages"][-1]
 
             print("\n" + "=" * 70)
-            print("🧠 AGENT RESPONSE")
+            print("AGENT RESPONSE")
             print("=" * 70)
             print(final_message.content)
 
             print("\n" + "=" * 70)
-            print("✅ RESULT SUMMARY")
+            print("RESULT SUMMARY")
             print("=" * 70)
             print(f"Last code-review issue key (if any): {workflow.issue_key}")
             print(f"Total workflow updates so far: {len(workflow.updates)}")
             print("=" * 70)
 
         except KeyboardInterrupt:
-            print("\n\n👋 Interrupted")
+            print("\n\nInterrupted")
             break
         except Exception as e:
-            print(f"\n❌ Error: {str(e)[:200]}")
+            print(f"\nError: {str(e)[:200]}")
+
