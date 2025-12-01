@@ -71,8 +71,5 @@ code_review_agent:
     repository analysis. For pure Slack messages, do nothing — that is
     Slack agent's job.
 
-# Optional: keep this if you’re using it manually somewhere else
-notification_coordinator:
-  system_prompt: |
-    You are a Notification Coordinator...
-    (you can leave or remove this if it is not used in code)
+
+
