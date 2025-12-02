@@ -847,8 +847,6 @@ CODE_REVIEW_TOOLS = [
     code_review_extract_repo_url,
     code_review_clone_repo,
     code_review_run_deep_analysis,
-    jira_create_issue,
-    jira_search_issues,
     jira_transition_issue,
     slack_send_message,
     slack_create_jira_notification,
@@ -1031,4 +1029,5 @@ if __name__ == "__main__":
             break
         except Exception as e:
             print(f"\nError: {str(e)[:200]}")
+
 
