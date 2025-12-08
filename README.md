@@ -4,7 +4,7 @@ An intelligent, **fully agentic** multi-agent code review system using **LangGra
 
 ---
 
-## 📋 Table of Contents
+## 📋 Table of Contents 
 
 - [Features](#features)
 - [System Architecture](#system-architecture)
