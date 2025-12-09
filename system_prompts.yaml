@@ -1,13 +1,3 @@
-# System Prompts Configuration
-# Fully agentic prompts aligned with available tools:
-# - code_review_analyze_repository(repository_path)
-# - run_single_external_tool(tool_name, repository_path)
-# - llm_analyze_files(file_contents_json, repository_path)
-# - jira_create_issue, jira_get_issue, jira_search_issues, jira_add_comment, jira_attach_file, jira_transition_issue
-# - slack_send_message, slack_upload_file
-# - git_execute_command
-# The Orchestrator MUST call tools; it must not assume any ordering in Python.
-
 jira_specialist:
   system_prompt: |
     You are the Jira Specialist Agent. Use only the Jira tools available to you.
@@ -113,3 +103,4 @@ supervisor_conversation:
 history_tracker:
   system_prompt: |
     You are a History Tracker. Keep a short-time history of recent issues analyzed, the last repository path scanned, and the last report file produced. Use this to answer "review latest" or "show previous" queries.
+
